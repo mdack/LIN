@@ -23,7 +23,6 @@ module_param(fifoX, int, 0000);
 MODULE_PARM_DESC(fifoX, "An integer");
 
 struct list_head my_fifolist;
-int fifolist_count;
 
 typedef struct{
 	char *name;
@@ -293,42 +292,10 @@ int add_fifoproc(void){
 	for(i = 0; i < fifoX; i++){
 		node = (fifolist *)vmalloc(sizeof(fifolist));
 		node->name = (char *)vmalloc(MAX_NAME_LEN * sizeof(char));
-
+		
 		aux = "";
-
-		switch(fifolist_count){
-			case 0:
-				aux = "fifo0";
-			break;
-			case 1:
-				aux = "fifo1";
-			break;
-			case 2:
-				aux = "fifo2";
-			break;
-			case 3:
-				aux = "fifo3";
-			break;
-			case 4:
-				aux = "fifo4";
-			break;
-			case 5:
-				aux = "fifo5";
-			break;
-			case 6:
-				aux = "fifo6";
-			break;
-			case 7:
-				aux = "fifo7";
-			break;
-			case 8:
-				aux = "fifo8";
-			break;
-			case 9:
-				aux = "fifo9";
-			break;
-		}
-
+		
+		sprintf(aux, "fifo%d", i); 
 		strcpy(node->name, aux);
 		node->cons_count = 0;
 		node->prod_count = 0;
@@ -345,7 +312,6 @@ int add_fifoproc(void){
 		}
 
 		list_add_tail(&node->links, &my_fifolist);
-		fifolist_count++;
 
 		up(&sem_fifolist);
 
@@ -375,7 +341,6 @@ int remove_fifoprocs(void){
 
 		vfree(fifo->name);
 		vfree(fifo);
-		fifolist_count--;
 	}
 
 	up(&sem_fifolist);
@@ -386,7 +351,6 @@ int remove_fifoprocs(void){
 
 int init_fifoproc_module(void) {
 
-	fifolist_count = 0;
 	sema_init(&sem_fifolist, 1);
 	INIT_LIST_HEAD(&my_fifolist);
 	add_fifoproc();
